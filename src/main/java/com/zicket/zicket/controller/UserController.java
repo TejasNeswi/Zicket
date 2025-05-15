@@ -4,6 +4,10 @@ import com.zicket.zicket.entity.User;
 import com.zicket.zicket.service.UserService;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,35 +21,26 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping
-    public List<User> getAllUsers()
+
+    @PutMapping()
+    public ResponseEntity<?> updateUser(@RequestBody User userDetails)
     {
-        return userService.getAllUsers();
+        Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
+        String username=authentication.getName();
+        User userInDb=userService.findByUsername(username);
+        userInDb.setUsername(userDetails.getUsername());
+        userInDb.setPassword(userDetails.getPassword());
+        userService.saveNewUser(userInDb);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/signup")
-    public boolean createNewUser(@RequestBody User user)
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser()
     {
-        userService.saveNewUser(user);
-        return true;
-    }
-    @PutMapping("{userId}")
-    public void updateUser(@RequestBody User user, @PathVariable ObjectId userId)
-    {
-        Optional<User> userById = userService.findUserById(userId);
-        if(userById.isPresent())
-        {
-            User old=userById.get();
-            old.setUsername(user.getUsername()!=null && !user.getUsername().equals("")?user.getUsername(): old.getUsername());
-            old.setPassword(user.getPassword()!=null && !user.getPassword().equals("")?user.getPassword(): old.getPassword());
-            userService.saveNewUser(old);
-        }
-    }
-
-    @DeleteMapping("/{username}")
-    public void deleteUser(@PathVariable String username)
-    {
+        Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
+        String username=authentication.getName();
         User user = userService.findByUsername(username);
         userService.deleteUser(user);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
