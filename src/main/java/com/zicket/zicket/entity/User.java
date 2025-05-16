@@ -31,5 +31,7 @@ public class User {
 
     private String traderType;
     private List<String> roles;
+    @DBRef
+    private List<Payment> payments;
 
 }

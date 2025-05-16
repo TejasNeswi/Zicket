@@ -30,6 +30,8 @@ public class UserService {
     {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(List.of("USER"));
+        user.setPayments(new ArrayList<>());
+        user.setTickets(new ArrayList<>());
         userRepository.save(user);
     }
 
@@ -41,11 +43,6 @@ public class UserService {
     public void loginUser(User user)
     {
         userRepository.save(user);
-    }
-
-    public Optional<User> findUserById(ObjectId id)
-    {
-        return userRepository.findById(id);
     }
 
     public User findByUsername(String username)

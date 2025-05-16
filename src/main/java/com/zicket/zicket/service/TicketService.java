@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,12 +25,20 @@ public class TicketService {
     @Autowired
     private UserService userService;
 
+    public List<Ticket> getAllEvents()
+    {
+
+        return ticketRepository.findAll();
+    }
+
     @Transactional
     public void saveTicketDetails(String username, Ticket ticket)
     {
         try
         {
             User user=userService.findByUsername(username);
+            ticket.setTime(LocalDateTime.now());
+            ticket.setStatus(true);
             ticketRepository.save(ticket);
             if(user.getTickets()==null)
             {
@@ -40,7 +49,7 @@ public class TicketService {
         }
         catch (Exception e)
         {
-            log.error("Error while creating a ticket "+e);
+            log.error("Error while creating a ticket {}", String.valueOf(e));
         }
     }
 
@@ -50,21 +59,35 @@ public class TicketService {
         return ticketRepository.findById(id);
     }
 
+    @Transactional
     public Ticket deleteTicket(String username, ObjectId id)
     {
         User user=userService.findByUsername(username);
-        if(user.getTickets().contains(ticketRepository.findById(id).get()))
+        Optional<Ticket> ticket=ticketRepository.findById(id);
+        if(ticket.isPresent() && user.getTickets().contains(ticket.get()))
         {
-            Optional<Ticket> ticket=ticketRepository.findById(id);
-            user.getTickets().remove(id);
+            user.getTickets().remove(ticket.get());
             ticketRepository.deleteById(id);
             userService.save(user);
-            if(ticket.isPresent())
-            {
-                return ticket.get();
-            }
+            return ticket.get();
         }
         return null;
+    }
 
+    @Transactional
+    public void transferTicket(String from, String to, ObjectId id)
+    {
+        User owner=userService.findByUsername(from);
+        User buyer=userService.findByUsername(to);
+        Optional<Ticket> ticket = ticketRepository.findById(id);
+        if(ticket.isPresent() && owner.getTickets().contains(ticket.get()))
+        {
+            owner.getTickets().remove(ticket.get());
+            buyer.getTickets().add(ticket.get());
+            ticket.get().setStatus(false);
+            ticketRepository.save(ticket.get());
+            userService.save(buyer);
+            userService.save(owner);
+        }
     }
 }

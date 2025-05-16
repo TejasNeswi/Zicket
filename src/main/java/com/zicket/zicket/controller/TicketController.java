@@ -27,7 +27,7 @@ public class TicketController {
     @Autowired
     private UserService userService;
 
-    @GetMapping
+    @GetMapping("/get-my-tickets")
     public ResponseEntity<?> getAllTicketsOfUser()
     {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -38,6 +38,18 @@ public class TicketController {
             return new ResponseEntity<>(allTickets, HttpStatus.OK);
         else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/get-event-info/{ticketId}")
+    public ResponseEntity<?> getTicketInfo(@PathVariable ObjectId ticketId)
+    {
+        Optional<Ticket> clicked=ticketService.getTicketById(ticketId);
+        if(clicked.isPresent())
+        {
+            Ticket ticket=clicked.get();
+            return new ResponseEntity<>(ticket, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping
@@ -71,6 +83,7 @@ public class TicketController {
                 oldTicket.setLocation(ticket.getLocation()!=null && !ticket.getLocation().equals("")? ticket.getLocation(): oldTicket.getLocation());
                 oldTicket.setStand(ticket.getStand()!=null && !ticket.getStand().equals("")? ticket.getStand(): oldTicket.getStand());
                 oldTicket.setEventName(ticket.getEventName()!=null && !ticket.getEventName().equals("")? ticket.getEventName(): oldTicket.getEventName());
+                oldTicket.setPrice(ticket.getPrice()!=null && !ticket.getPrice().equals("")? ticket.getPrice(): oldTicket.getPrice());
                 oldTicket.setDate(ticket.getDate()!=null && !ticket.getDate().equals("")? ticket.getDate(): oldTicket.getDate());
                 ticketService.saveTicketDetails(username, oldTicket);
                 return new ResponseEntity<>(HttpStatus.OK);

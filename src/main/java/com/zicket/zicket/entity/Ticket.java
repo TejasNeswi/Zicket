@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -25,5 +26,8 @@ public class Ticket {
     private String date;
     private String location;
     private String stand;
+    private LocalDateTime time;
+    private String price;
+    private boolean status;
 
 }
