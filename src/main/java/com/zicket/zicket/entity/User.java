@@ -26,6 +26,8 @@ public class User {
     private String username;
     @NonNull
     private String password;
+    @NonNull
+    private String email;
     @DBRef
     private List<Ticket> tickets;
 

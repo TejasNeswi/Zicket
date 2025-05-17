@@ -1,6 +1,5 @@
 package com.zicket.zicket.entity;
 
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -4,9 +4,13 @@ import com.zicket.zicket.entity.Payment;
 import com.zicket.zicket.entity.User;
 import com.zicket.zicket.repository.PaymentRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -40,6 +44,20 @@ public class PaymentService {
         {
             throw new Exception("Card No or CVV is incorrect");
         }
+    }
 
+    public Payment fetchPaymentInfo(String username)
+    {
+        try {
+            User user=userService.findByUsername(username);
+            List<Payment> paymentList=user.getPayments();
+            Payment mostRecentPayment=paymentList.get(paymentList.size()-1);
+            return mostRecentPayment;
+        }
+        catch (Exception e)
+        {
+            log.error("Error fetching payment info", e);
+        }
+        return null;
     }
 }

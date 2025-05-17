@@ -1,5 +1,6 @@
 package com.zicket.zicket.service;
 
+import com.zicket.zicket.entity.Payment;
 import com.zicket.zicket.entity.Ticket;
 import com.zicket.zicket.entity.User;
 import com.zicket.zicket.repository.TicketRepository;
@@ -7,9 +8,11 @@ import com.zicket.zicket.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +25,17 @@ public class TicketService {
     @Autowired
     private TicketRepository ticketRepository;
 
+    @Value("${emailid}")
+    private String emailAddress;
+
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PaymentService paymentService;
+
+    @Autowired
+    private EmailService emailService;
 
     public List<Ticket> getAllEvents()
     {
@@ -75,8 +87,7 @@ public class TicketService {
     }
 
     @Transactional
-    public void transferTicket(String from, String to, ObjectId id)
-    {
+    public void transferTicket(String from, String to, ObjectId id) throws IOException {
         User owner=userService.findByUsername(from);
         User buyer=userService.findByUsername(to);
         Optional<Ticket> ticket = ticketRepository.findById(id);
@@ -88,6 +99,8 @@ public class TicketService {
             ticketRepository.save(ticket.get());
             userService.save(buyer);
             userService.save(owner);
+            Payment payment=paymentService.fetchPaymentInfo(buyer.getUsername());
+            emailService.sendEmail(emailAddress, "Payment Status and Ticket Info", buyer.getEmail() , "Payment of "+ticket.get().getPrice()+" successful.\n\nYour payment info: \n"+paymentService.fetchPaymentInfo(buyer.getUsername()).toString()+"\n\nYour ticket id is "+ticket.get().getTicketId()+".\n\nYour ticket details are:\n"+ticket.get().toString());
         }
     }
 }

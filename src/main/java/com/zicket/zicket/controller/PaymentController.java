@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,8 +45,16 @@ public class PaymentController {
             Optional<Ticket> selected=ticketService.getTicketById(ticketId);
             if(selected.isPresent())
             {
-                Ticket ticket=selected.get();
-                ticketService.transferTicket(from.getUsername(), user.getUsername(), ticketId);
+                try
+                {
+                    Ticket ticket=selected.get();
+                    ticketService.transferTicket(from.getUsername(), user.getUsername(), ticketId);
+                }
+                catch (IOException e)
+                {
+                    log.error("Error Sending mail", e);
+                }
+
             }
 
             return new ResponseEntity<>(payment+"Successfull", HttpStatus.ACCEPTED);
