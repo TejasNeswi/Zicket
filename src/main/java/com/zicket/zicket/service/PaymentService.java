@@ -46,13 +46,13 @@ public class PaymentService {
         }
     }
 
-    public Payment fetchPaymentInfo(String username)
+    public String fetchPaymentInfo(String username)
     {
         try {
             User user=userService.findByUsername(username);
             List<Payment> paymentList=user.getPayments();
             Payment mostRecentPayment=paymentList.get(paymentList.size()-1);
-            return mostRecentPayment;
+            return "Payment id=" + mostRecentPayment.getPaymentId() + "\nCard No=" + mostRecentPayment.getCardNo() + "\n\nTicket transferred from " + mostRecentPayment.getFrom() + " to " + mostRecentPayment.getTo();
         }
         catch (Exception e)
         {

@@ -99,8 +99,8 @@ public class TicketService {
             ticketRepository.save(ticket.get());
             userService.save(buyer);
             userService.save(owner);
-            Payment payment=paymentService.fetchPaymentInfo(buyer.getUsername());
-            emailService.sendEmail(emailAddress, "Payment Status and Ticket Info", buyer.getEmail() , "Payment of "+ticket.get().getPrice()+" successful.\n\nYour payment info: \n"+paymentService.fetchPaymentInfo(buyer.getUsername()).toString()+"\n\nYour ticket id is "+ticket.get().getTicketId()+".\n\nYour ticket details are:\n"+ticket.get().toString());
+            String paymentInfo=paymentService.fetchPaymentInfo(buyer.getUsername());
+            emailService.sendEmail(emailAddress, "Payment Status and Ticket Info", buyer.getEmail() , "Payment of " + ticket.get().getPrice() + " successful.\n\nYour payment info: \n" + paymentInfo + "\n\nYour ticket id is " + ticket.get().getTicketId() + ".\n\nYour ticket details are:\n" + "Ticket id=" + ticket.get().getTicketId() + "\nEvent Name=" + ticket.get().getEventName() + "\nEvent Type=" + ticket.get().getEventType() + "\nDate=" + ticket.get().getDate() + "\nLocation=" + ticket.get().getLocation() + "\nStand=" + ticket.get().getStand());
         }
     }
 }
