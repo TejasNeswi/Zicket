@@ -34,7 +34,7 @@ public class PaymentController {
     private TicketService ticketService;
 
     @PostMapping("/{ticketId}")
-    public ResponseEntity<?> createPayment(@RequestBody Payment payment, @PathVariable ObjectId ticketId)
+    public ResponseEntity<?> createPayment(@RequestBody Payment payment, @PathVariable String ticketId)
     {
         try{
             Authentication authentication= SecurityContextHolder.getContext().getAuthentication();

@@ -22,6 +22,9 @@ public class InitialService {
     @Autowired
     private TicketRepository ticketRepository;
 
+    @Autowired
+    private TicketService ticketService;
+
 //    @Scheduled(cron="0 0 1,16 * *")
     @PostConstruct
     public void deletePreviousTickets()
@@ -32,5 +35,16 @@ public class InitialService {
         {
             ticketRepository.delete(ticket);
         }
+    }
+
+    public int getLatestId()
+    {
+        int i=0;
+        List<Ticket> allTickets=ticketService.getAllEvents("allEvents");
+        for(Ticket t: allTickets)
+        {
+            i=Integer.valueOf(t.getTicketId());
+        }
+        return i;
     }
 }

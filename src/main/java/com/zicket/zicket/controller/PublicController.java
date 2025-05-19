@@ -34,6 +34,6 @@ public class PublicController {
     @GetMapping
     public List<Ticket> getAllEvents()
     {
-        return ticketService.getAllEvents();
+        return ticketService.getAllEvents("allEvents");
     }
 }

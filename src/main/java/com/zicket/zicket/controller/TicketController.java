@@ -41,7 +41,7 @@ public class TicketController {
     }
 
     @GetMapping("/get-event-info/{ticketId}")
-    public ResponseEntity<?> getTicketInfo(@PathVariable ObjectId ticketId)
+    public ResponseEntity<?> getTicketInfo(@PathVariable String ticketId)
     {
         Optional<Ticket> clicked=ticketService.getTicketById(ticketId);
         if(clicked.isPresent())
@@ -68,7 +68,7 @@ public class TicketController {
         }
     }
     @PutMapping("/id/{ticketId}")
-    public ResponseEntity<?> updateTicket(@RequestBody Ticket ticket, @PathVariable ObjectId ticketId)
+    public ResponseEntity<?> updateTicket(@RequestBody Ticket ticket, @PathVariable String ticketId)
     {
         Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
         String username=authentication.getName();
@@ -92,7 +92,7 @@ public class TicketController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     @DeleteMapping("/id/{ticketId}")
-    public ResponseEntity<?> deleteTicket(@PathVariable ObjectId ticketId)
+    public ResponseEntity<?> deleteTicket(@PathVariable String ticketId)
     {
         Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
         String username=authentication.getName();

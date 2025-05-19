@@ -32,15 +32,28 @@ public class TicketService {
     private UserService userService;
 
     @Autowired
+    private InitialService initialService;
+
+    @Autowired
     private PaymentService paymentService;
 
     @Autowired
     private EmailService emailService;
 
-    public List<Ticket> getAllEvents()
-    {
+    @Autowired
+    private RedisService redisService;
 
-        return ticketRepository.findAll();
+
+    public List<Ticket> getAllEvents(String key)
+    {
+        List<Ticket> all = redisService.get(key);
+        if(all!=null)
+        {
+            return all;
+        }
+        List<Ticket> tickets = ticketRepository.findAll();
+        redisService.set(key, tickets, 300l);
+        return tickets;
     }
 
     @Transactional
@@ -48,8 +61,10 @@ public class TicketService {
     {
         try
         {
+            int i=initialService.getLatestId();
             User user=userService.findByUsername(username);
             ticket.setTime(LocalDateTime.now());
+            ticket.setTicketId(String.valueOf("000000"+(++i)));
             ticket.setStatus(true);
             ticketRepository.save(ticket);
             if(user.getTickets()==null)
@@ -66,13 +81,13 @@ public class TicketService {
     }
 
 
-    public Optional<Ticket> getTicketById(ObjectId id)
+    public Optional<Ticket> getTicketById(String id)
     {
         return ticketRepository.findById(id);
     }
 
     @Transactional
-    public Ticket deleteTicket(String username, ObjectId id)
+    public Ticket deleteTicket(String username, String id)
     {
         User user=userService.findByUsername(username);
         Optional<Ticket> ticket=ticketRepository.findById(id);
@@ -87,7 +102,7 @@ public class TicketService {
     }
 
     @Transactional
-    public void transferTicket(String from, String to, ObjectId id) throws IOException {
+    public void transferTicket(String from, String to, String id) throws IOException {
         User owner=userService.findByUsername(from);
         User buyer=userService.findByUsername(to);
         Optional<Ticket> ticket = ticketRepository.findById(id);
