@@ -29,9 +29,9 @@ public class User {
     @NonNull
     private String email;
     @DBRef
-    private List<Ticket> tickets;
-
-    private String traderType;
+    private List<Ticket> myTickets;
+    @DBRef
+    private List<Ticket> purchasedTickets;
     private List<String> roles;
     @DBRef
     private List<Payment> payments;

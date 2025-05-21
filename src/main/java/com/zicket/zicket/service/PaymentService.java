@@ -1,14 +1,16 @@
 package com.zicket.zicket.service;
 
 import com.zicket.zicket.entity.Payment;
+import com.zicket.zicket.entity.Ticket;
 import com.zicket.zicket.entity.User;
 import com.zicket.zicket.repository.PaymentRepository;
+import com.zicket.zicket.repository.TicketRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,23 +23,28 @@ public class PaymentService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private TicketRepository ticketRepository;
+
     @Transactional
-    public void savePaymentInfo(Payment payment, String username) throws Exception
+    public void savePaymentInfo(Payment payment, String username, String ticketId) throws Exception
     {
         User user=userService.findByUsername(username);
         if(payment.getCardNo().length()==12 && payment.getCvv().length()==3)
         {
             String from=payment.getFrom();
             User owner =userService.findByUsername(from);
-            if(owner!=null)
+            Optional<Ticket> ticket = ticketRepository.findById(ticketId);
+            if(owner!=null && owner.getMyTickets().contains(ticket.get()) && ticket.get().isStatus())
             {
                 payment.setTo(user.getUsername());
+                payment.setTimestamp(LocalDateTime.now());
                 user.getPayments().add(payment);
                 paymentRepository.save(payment);
                 userService.save(user);
             }
             else {
-                throw new Exception("Owner not found");
+                throw new Exception("Ticket Already sold or Ticket no found");
             }
         }
         else
@@ -52,7 +59,7 @@ public class PaymentService {
             User user=userService.findByUsername(username);
             List<Payment> paymentList=user.getPayments();
             Payment mostRecentPayment=paymentList.get(paymentList.size()-1);
-            return "Payment id=" + mostRecentPayment.getPaymentId() + "\nCard No=" + mostRecentPayment.getCardNo() + "\n\nTicket transferred from " + mostRecentPayment.getFrom() + " to " + mostRecentPayment.getTo();
+            return "Payment id=" + mostRecentPayment.getPaymentId() + "\nCard No=" + mostRecentPayment.getCardNo() + "\nDate and time of transaction: " + mostRecentPayment.getTimestamp() + "\n\nTicket transferred from " + mostRecentPayment.getFrom() + " to " + mostRecentPayment.getTo();
         }
         catch (Exception e)
         {

@@ -31,7 +31,18 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(List.of("USER"));
         user.setPayments(new ArrayList<>());
-        user.setTickets(new ArrayList<>());
+        user.setMyTickets(new ArrayList<>());
+        user.setPurchasedTickets(new ArrayList<>());
+        userRepository.save(user);
+    }
+
+    public void saveNewUserByAdmin(User user)
+    {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(List.of("ADMIN", "USER"));
+        user.setPayments(new ArrayList<>());
+        user.setMyTickets(new ArrayList<>());
+        user.setPurchasedTickets(new ArrayList<>());
         userRepository.save(user);
     }
 

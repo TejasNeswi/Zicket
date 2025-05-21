@@ -25,7 +25,8 @@ public class SpringSecurity {
     {
         return httpSecurity.authorizeHttpRequests(request -> request
                 .requestMatchers("/public/**").permitAll()
-                .requestMatchers("/user/**").authenticated()
+                .requestMatchers("/user/**", "/ticket/**", "/payments/**").authenticated()
+                        .requestMatchers(("/admin/**")).hasRole("ADMIN")
                 .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)

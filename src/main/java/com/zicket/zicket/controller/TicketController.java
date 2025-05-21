@@ -4,6 +4,7 @@ import com.zicket.zicket.entity.Ticket;
 import com.zicket.zicket.entity.User;
 import com.zicket.zicket.service.TicketService;
 import com.zicket.zicket.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/ticket")
+@Slf4j
 public class TicketController {
 
 
@@ -33,7 +35,20 @@ public class TicketController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username=authentication.getName();
         User userInDb=userService.findByUsername(username);
-        List<Ticket> allTickets=userInDb.getTickets();
+        List<Ticket> allTickets=userInDb.getMyTickets();
+        if(allTickets!=null && !allTickets.isEmpty())
+            return new ResponseEntity<>(allTickets, HttpStatus.OK);
+        else
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/get-purchased-tickets")
+    public ResponseEntity<?> getPurchasedTicketsOfUser()
+    {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username=authentication.getName();
+        User userInDb=userService.findByUsername(username);
+        List<Ticket> allTickets=userInDb.getPurchasedTickets();
         if(allTickets!=null && !allTickets.isEmpty())
             return new ResponseEntity<>(allTickets, HttpStatus.OK);
         else
@@ -64,32 +79,39 @@ public class TicketController {
         }
         catch (Exception e)
         {
+            log.error(String.valueOf(e));
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
     @PutMapping("/id/{ticketId}")
     public ResponseEntity<?> updateTicket(@RequestBody Ticket ticket, @PathVariable String ticketId)
     {
-        Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
-        String username=authentication.getName();
-        User user=userService.findByUsername(username);
-        List<Ticket> collect = user.getTickets().stream().filter(x -> x.getTicketId().equals(ticketId)).collect(Collectors.toList());
-        if(!collect.isEmpty())
+        try
         {
-            Optional<Ticket> ticketOfUser=ticketService.getTicketById(ticketId);
-            if(ticketOfUser.isPresent())
+            Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
+            String username=authentication.getName();
+            User user=userService.findByUsername(username);
+            List<Ticket> collect = user.getMyTickets().stream().filter(x -> x.getTicketId().equals(ticketId)).collect(Collectors.toList());
+            if(!collect.isEmpty())
             {
-                Ticket oldTicket=ticketOfUser.get();
-                oldTicket.setLocation(ticket.getLocation()!=null && !ticket.getLocation().equals("")? ticket.getLocation(): oldTicket.getLocation());
-                oldTicket.setStand(ticket.getStand()!=null && !ticket.getStand().equals("")? ticket.getStand(): oldTicket.getStand());
-                oldTicket.setEventName(ticket.getEventName()!=null && !ticket.getEventName().equals("")? ticket.getEventName(): oldTicket.getEventName());
-                oldTicket.setPrice(ticket.getPrice()!=null && !ticket.getPrice().equals("")? ticket.getPrice(): oldTicket.getPrice());
-                oldTicket.setDate(ticket.getDate()!=null && !ticket.getDate().equals("")? ticket.getDate(): oldTicket.getDate());
-                ticketService.saveTicketDetails(username, oldTicket);
-                return new ResponseEntity<>(HttpStatus.OK);
+                Optional<Ticket> ticketOfUser=ticketService.getTicketById(ticketId);
+                if(ticketOfUser.isPresent())
+                {
+                    Ticket oldTicket=ticketOfUser.get();
+                    oldTicket.setLocation(ticket.getLocation()!=null && !ticket.getLocation().equals("")? ticket.getLocation(): oldTicket.getLocation());
+                    oldTicket.setStand(ticket.getStand()!=null && !ticket.getStand().equals("")? ticket.getStand(): oldTicket.getStand());
+                    oldTicket.setEventName(ticket.getEventName()!=null && !ticket.getEventName().equals("")? ticket.getEventName(): oldTicket.getEventName());
+                    oldTicket.setPrice(ticket.getPrice()!=null && !ticket.getPrice().equals("")? ticket.getPrice(): oldTicket.getPrice());
+                    oldTicket.setDate(ticket.getDate()!=null && !ticket.getDate().equals("")? ticket.getDate(): oldTicket.getDate());
+                    ticketService.saveTicketDetails(username, oldTicket);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                }
             }
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        catch (Exception e) {
+            return new ResponseEntity<>((HttpStatus.BAD_REQUEST));
+        }
     }
     @DeleteMapping("/id/{ticketId}")
     public ResponseEntity<?> deleteTicket(@PathVariable String ticketId)

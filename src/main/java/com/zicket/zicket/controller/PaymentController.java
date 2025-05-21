@@ -40,7 +40,7 @@ public class PaymentController {
             Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
             User user=userService.findByUsername(username);
-            paymentService.savePaymentInfo(payment, username);
+            paymentService.savePaymentInfo(payment, username, ticketId);
             User from=userService.findByUsername(payment.getFrom());
             Optional<Ticket> selected=ticketService.getTicketById(ticketId);
             if(selected.isPresent())

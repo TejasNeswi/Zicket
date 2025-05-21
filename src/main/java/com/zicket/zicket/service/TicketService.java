@@ -1,5 +1,6 @@
 package com.zicket.zicket.service;
 
+import com.zicket.zicket.cache.AppCache;
 import com.zicket.zicket.entity.Payment;
 import com.zicket.zicket.entity.Ticket;
 import com.zicket.zicket.entity.User;
@@ -41,43 +42,49 @@ public class TicketService {
     private EmailService emailService;
 
     @Autowired
-    private RedisService redisService;
+    private AppCache appCache;
+
+//    @Autowired
+//    private RedisService redisService;
 
 
     public List<Ticket> getAllEvents(String key)
     {
-        List<Ticket> all = redisService.get(key);
-        if(all!=null)
-        {
-            return all;
-        }
+//        List<Ticket> all = redisService.get(key);
+//        if(all!=null)
+//        {
+//            return all;
+//        }
         List<Ticket> tickets = ticketRepository.findAll();
-        redisService.set(key, tickets, 300l);
+//        redisService.set(key, tickets, 300l);
         return tickets;
     }
 
     @Transactional
-    public void saveTicketDetails(String username, Ticket ticket)
+    public void saveTicketDetails(String username, Ticket ticket) throws Exception
     {
-        try
-        {
+
+            List<Ticket> tickets = (List<Ticket>) appCache.ticketCache.get("allEvents");
+            for(Ticket t: tickets)
+            {
+                if(t.getStand().equals(ticket.getStand()))
+                {
+                    throw new Exception("Ticket already exists");
+                }
+            }
             int i=initialService.getLatestId();
             User user=userService.findByUsername(username);
             ticket.setTime(LocalDateTime.now());
             ticket.setTicketId(String.valueOf("000000"+(++i)));
             ticket.setStatus(true);
             ticketRepository.save(ticket);
-            if(user.getTickets()==null)
+            if(user.getMyTickets()==null)
             {
-                user.setTickets(new ArrayList<>());
+                user.setMyTickets(new ArrayList<>());
             }
-            user.getTickets().add(ticket);
+            user.getMyTickets().add(ticket);
             userService.save(user);
-        }
-        catch (Exception e)
-        {
-            log.error("Error while creating a ticket {}", String.valueOf(e));
-        }
+
     }
 
 
@@ -91,9 +98,9 @@ public class TicketService {
     {
         User user=userService.findByUsername(username);
         Optional<Ticket> ticket=ticketRepository.findById(id);
-        if(ticket.isPresent() && user.getTickets().contains(ticket.get()))
+        if(ticket.isPresent() && user.getMyTickets().contains(ticket.get()))
         {
-            user.getTickets().remove(ticket.get());
+            user.getMyTickets().remove(ticket.get());
             ticketRepository.deleteById(id);
             userService.save(user);
             return ticket.get();
@@ -106,10 +113,10 @@ public class TicketService {
         User owner=userService.findByUsername(from);
         User buyer=userService.findByUsername(to);
         Optional<Ticket> ticket = ticketRepository.findById(id);
-        if(ticket.isPresent() && owner.getTickets().contains(ticket.get()))
+        if(ticket.isPresent() && owner.getMyTickets().contains(ticket.get()))
         {
-            owner.getTickets().remove(ticket.get());
-            buyer.getTickets().add(ticket.get());
+            owner.getMyTickets().remove(ticket.get());
+            buyer.getPurchasedTickets().add(ticket.get());
             ticket.get().setStatus(false);
             ticketRepository.save(ticket.get());
             userService.save(buyer);

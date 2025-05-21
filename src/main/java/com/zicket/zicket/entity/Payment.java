@@ -8,6 +8,8 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+
 @Document("payments")
 @Data
 @AllArgsConstructor
@@ -24,4 +26,6 @@ public class Payment {
     private String cardNo;
     @NonNull
     private String cvv;
+
+    private LocalDateTime timestamp;
 }
