@@ -47,7 +47,6 @@ public class PaymentController {
             {
                 try
                 {
-                    Ticket ticket=selected.get();
                     ticketService.transferTicket(from.getUsername(), user.getUsername(), ticketId);
                 }
                 catch (IOException e)

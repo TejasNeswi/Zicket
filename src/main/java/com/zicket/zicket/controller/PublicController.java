@@ -1,17 +1,21 @@
 package com.zicket.zicket.controller;
 
+import com.zicket.zicket.utils.JwtUtil;
 import com.zicket.zicket.cache.AppCache;
 import com.zicket.zicket.entity.Ticket;
 import com.zicket.zicket.entity.User;
 import com.zicket.zicket.enums.EventType;
 import com.zicket.zicket.service.TicketService;
+import com.zicket.zicket.service.UserDetailsServiceImplementation;
 import com.zicket.zicket.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +23,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/public")
+@Slf4j
 public class PublicController {
 
 
@@ -32,13 +37,45 @@ public class PublicController {
     private String eventsKey;
 
     @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
     private AppCache appCache;
 
+    @Autowired
+    private UserDetailsServiceImplementation userDetailsServiceImplementation;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     @PostMapping("/signup")
-    public ResponseEntity<?> createNewUser(@RequestBody User user)
+    public ResponseEntity<?> signup(@RequestBody User user)
     {
         userService.saveNewUser(user);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User user)
+    {
+        try
+        {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+            UserDetails userDetails=userDetailsServiceImplementation.loadUserByUsername(user.getUsername());
+            String jwt=jwtUtil.generateToken(userDetails.getUsername());
+            return new ResponseEntity<>(jwt, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            log.error(String.valueOf(e));
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/health-check")
+    public String healthCheck()
+    {
+        return "Health is fine";
     }
 
     @GetMapping
