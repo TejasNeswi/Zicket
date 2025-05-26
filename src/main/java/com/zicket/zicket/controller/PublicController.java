@@ -1,5 +1,6 @@
 package com.zicket.zicket.controller;
 
+import com.mongodb.client.gridfs.model.GridFSFile;
 import com.zicket.zicket.utils.JwtUtil;
 import com.zicket.zicket.cache.AppCache;
 import com.zicket.zicket.entity.Ticket;
@@ -9,16 +10,29 @@ import com.zicket.zicket.service.TicketService;
 import com.zicket.zicket.service.UserDetailsServiceImplementation;
 import com.zicket.zicket.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsOperations;
+import org.springframework.data.mongodb.gridfs.GridFsResource;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 @RestController
@@ -41,6 +55,12 @@ public class PublicController {
 
     @Autowired
     private AppCache appCache;
+
+    @Autowired
+    private GridFsTemplate gridFsTemplate;
+
+    @Autowired
+    private GridFsOperations gridFsOperations;
 
     @Autowired
     private UserDetailsServiceImplementation userDetailsServiceImplementation;

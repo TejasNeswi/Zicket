@@ -7,6 +7,7 @@ import com.zicket.zicket.repository.PaymentRepository;
 import com.zicket.zicket.repository.TicketRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,9 @@ public class PaymentService {
     @Autowired
     private TicketRepository ticketRepository;
 
+    @Autowired
+    private PasswordEncoder cvvEncoder;
+
     @Transactional
     public void savePaymentInfo(Payment payment, String username, String ticketId) throws Exception
     {
@@ -40,6 +44,7 @@ public class PaymentService {
                 payment.setTo(user.getUsername());
                 payment.setTimestamp(LocalDateTime.now());
                 user.getPayments().add(payment);
+                payment.setCvv(cvvEncoder.encode(payment.getCvv()));
                 paymentRepository.save(payment);
                 userService.save(user);
             }

@@ -22,6 +22,7 @@ public class Ticket {
     private String date;
     private String location;
     private String stand;
+    private String fileId;
     private LocalDateTime time;
     private String price;
     private boolean status;
