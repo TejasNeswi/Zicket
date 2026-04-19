@@ -105,7 +105,7 @@ public class TicketController {
     }
 
     @PostMapping("/upload-ticket/{id}")
-    public ResponseEntity<?> uploadTicketFile(@PathVariable String id, @RequestBody MultipartFile file)
+    public ResponseEntity<?> uploadTicketFile(@PathVariable String id, @RequestParam("file") MultipartFile file)
     {
         try
         {
