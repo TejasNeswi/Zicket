@@ -1,0 +1,75 @@
+.my-tickets-page {
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.my-tickets-page h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-dark);
+}
+
+.subtitle {
+  color: var(--text-light);
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-header .subtitle {
+  margin-bottom: 0;
+}
+
+.ticket-count {
+  color: var(--text-light);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.ticket-wrapper {
+  position: relative;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--light-bg);
+  border-radius: 1rem;
+  margin: 2rem 0;
+}
+
+.empty-state p {
+  font-size: 1.2rem;
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .my-tickets-page h1 {
+    font-size: 1.5rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tickets-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
